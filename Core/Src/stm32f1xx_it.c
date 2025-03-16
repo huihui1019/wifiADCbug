@@ -69,7 +69,6 @@ extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN EV */
 extern u8 wifidata[30];
 extern u8 wifi;
-extern u8 wifi_flag ;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -361,8 +360,7 @@ void USART3_IRQHandler(void)
       // for(int i = 30,j=0 ; j < uart3rx.buffer[28]; i++,j++)
       // wifidata[j] = uart3rx.buffer[i]; 
       // wifi = atoi(&wifidata[0]);
-      wifi_flag = 1;
-    // wifi = atoi(&uart3rx.buffer[30]);
+    wifi = atoi(&uart3rx.buffer[30]);
     // HAL_UART_Transmit_DMA(&huart2, (u8 *)&wifi, 1);
     }
     HAL_UART_Receive_DMA(&huart3, (u8 *)&uart3rx.buffer[uart3rx.head], 256);

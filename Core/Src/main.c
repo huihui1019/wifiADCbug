@@ -50,8 +50,6 @@
 /* USER CODE BEGIN PV */
 u32 tim2utick = 0;
 u32 tim3utick = 0;
-u32 tim4utick = 0;
-u32 tim4utick_old = 0;
 u32 level = 0;
 u32 distance_time = 0;
 u32 rainfall = 0;
@@ -67,7 +65,6 @@ u32 key[4] = {0};
 u8 wifistr[10] = {0};
 u8 wifidata[10] = 0;
 u8 wifi = 10;
-u8 wifi_flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,8 +116,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
     distance_time = 0;
     }
   }
-  else if(htim->Instance == TIM4){//1ms tick interrupt handler
-    tim4utick++;
+  else if(htim->Instance == TIM3){//1ms tick interrupt handler
   }
 }
 
@@ -181,47 +177,37 @@ int main(void)
 
   while (1)
   {
-
-     if (wifi_flag){
-      for(int i = 30,j=0 ; j < uart3rx.buffer[28]; i++,j++)
-      wifidata[j] = uart3rx.buffer[i]; 
-      wifi = atoi(&wifidata[0]);
-      wifi_flag = 0;
-     }
-    if(tim4utick > tim4utick_old){
-      // HAL_UART_Transmit_DMA(&huart2,(u8 *)&key[1],2);
-        u8 string_level[20]="WATER_LEVEL(mm):";
-        // snprintf(float_str,8, "%f", level);
-        snprintf(float_str,8, "%04d", level);
-        strcat(string_level, float_str);
-        OLED_ShowString(0,0,string_level,12);
-        
-        u8 string_rain[20]="RAINFALL(%):";
-        for(int i=0; i<3; i++){
-        HAL_ADC_Start(&hadc1);
-        HAL_ADC_PollForConversion(&hadc1, 50);
-          if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
-            ADC_Value[i] = HAL_ADC_GetValue(&hadc1)*100/4096;  
-            ADC_Value_all += ADC_Value[i];
-          }
+    // HAL_UART_Transmit_DMA(&huart2,(u8 *)&key[1],2);
+      u8 string_level[20]="WATER_LEVEL(mm):";
+      // snprintf(float_str,8, "%f", level);
+      snprintf(float_str,8, "%04d", level);
+      strcat(string_level, float_str);
+      OLED_ShowString(0,0,string_level,12);
+      
+      u8 string_rain[20]="RAINFALL(%):";
+      for(int i=0; i<3; i++){
+      HAL_ADC_Start(&hadc1);
+      HAL_ADC_PollForConversion(&hadc1, 50);
+        if(HAL_IS_BIT_SET(HAL_ADC_GetState(&hadc1), HAL_ADC_STATE_REG_EOC)){
+          ADC_Value[i] = HAL_ADC_GetValue(&hadc1)*100/4096;  
+          ADC_Value_all += ADC_Value[i];
         }
-        rainfall = ADC_Value_all/3;
-        ADC_Value_all = 0;
-        snprintf(float_str,8, "%03d", 100-rainfall);
-        strcat(string_rain, float_str);
-        OLED_ShowString(0,16,string_rain,12);  
-        
-        u8 string_rainmax[20]="MAX(mm):";
-        snprintf(float_str,8, "%04d", levelmax);
-        strcat(string_rainmax, float_str);
-        OLED_ShowString(0,32,string_rainmax,12);
-        u8 string_rainmin[20]="MIN(mm):";
-        snprintf(float_str,8, "%04d", levelmin);
-        strcat(string_rainmin, float_str);
-        OLED_ShowString(0,48,string_rainmin,12);
-        OLED_Refresh();
-        tim4utick_old = tim4utick;
-    }
+      }
+      rainfall = ADC_Value_all/3;
+      ADC_Value_all = 0;
+      snprintf(float_str,8, "%03d", 100-rainfall);
+      strcat(string_rain, float_str);
+      OLED_ShowString(0,16,string_rain,12);  
+      
+      u8 string_rainmax[20]="MAX(mm):";
+      snprintf(float_str,8, "%04d", levelmax);
+      strcat(string_rainmax, float_str);
+      OLED_ShowString(0,32,string_rainmax,12);
+      u8 string_rainmin[20]="MIN(mm):";
+      snprintf(float_str,8, "%04d", levelmin);
+      strcat(string_rainmin, float_str);
+      OLED_ShowString(0,48,string_rainmin,12);
+      OLED_Refresh();
 
     switch (wifi){
       case 0:
